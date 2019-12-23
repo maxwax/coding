@@ -1,0 +1,157 @@
+#!/bin/bash
+
+#
+# 'coding' - maxcode@maxwellspangler.com
+#
+# Launch a terminal in a pre-defined display position with a pre-defined size
+# and adjust for different display hardware configurations
+#
+# 2019-12-22 Rewrite to replace messy case statements with config file
+
+function available_display_configs {
+  # 
+  if [[ -r $CONFIG_FILE ]]
+  then
+    echo "Available monitor configurations:"
+    echo
+    grep '^monitor-config:' $CONFIG_FILE
+    MCONFIG_LIST=$(grep '^monitor-config:' $CONFIG_FILE)
+    for EACH_MCONFIG
+    do
+      echo "Monitor config: $EACH_MCONFIG"
+    done
+  fi
+}
+
+function usage {
+
+  echo
+  echo "coding: Start terminal shell windows in specific locations"
+  echo
+  echo "Syntax: coding <windowoption>"
+  echo
+  echo "+------------------+ +------------------+"
+  echo "|Left | Mid | Right| |Test    |      Far|"
+  echo "|                  | |                  |"
+  echo "|West| |ctr|  |East| |Sideleft|Sideright|"
+  echo "+------------------+ +------------------+"
+  echo
+  echo "right     - 85x37 on right  of main monitor"
+  echo "mid       - 85x37 on middle of main monitor"
+  echo "left      - 85x37 on left   of main monitor"
+  echo
+  echo "test      - 85x72 on left   of aux monitor"
+  echo "far       - 85x72 on right  of aux monitor"
+  echo
+  echo "sideleft  - 85x25 on bottom left of aux monitor"
+  echo "sideright - 85x25 on bottom right of aux monitor"
+  echo
+  echo "bastionprod - Very short 80x8 window for SSH bastion connections to prod"
+  echo "bastionstaging - Very short 80x8 window for SSH bastion connections to prod"
+  echo
+  echo "The configuration file contains size and positioning information for"
+  echo "the following display configurations:"
+  echo
+  available_display_configs
+}
+
+function get_resolution {
+
+  RESOLUTION=$(xdpyinfo | grep dimensions | awk '{print $2}')
+  echo "Resolution: $RESOLUTION"
+
+  DISPLAY_LINE_COUNT=$(grep '^monitor-config:' $CONFIG_FILE | grep $RESOLUTION| wc -l)
+
+  if [[ $DISPLAY_LINE_COUNT -gt 0 ]]
+  then
+    DISPLAY_LINE=$(grep '^monitor-config:' $CONFIG_FILE | grep $RESOLUTION)
+    echo "Monitor config is |$DISPLAY_LINE|"
+
+    POSITION_RULE=$(echo $DISPLAY_LINE | awk '{print $2}')
+    echo "Position rule is |$POSITION_RULE|"
+
+  else
+    echo "Error: Can't find a monitor-config line in $CONFIG_FILE for resolution $RESOLUTION"
+    available_display_configs
+    exit 1
+  fi
+}
+
+function check_for_config {
+
+  POSITION_COUNT=$(egrep "^${POSITION_RULE}" $CONFIG_FILE | grep "${CODING_WINDOW}" | wc -l)
+
+  if [[ $POSITION_COUNT -gt 0 ]]
+  then
+    echo "Found position rules to apply"
+  else
+    echo "Error: No position rules to apply for |$POSITION_RULE|."
+    echo
+    usage
+    exit 1
+  fi
+}
+
+function launch_terminal {
+
+  grep $POSITION_RULE $CONFIG_FILE | grep "${CODING_WINDOW}"
+
+  LAUNCH_GEO=$(egrep "^${POSITION_RULE}" $CONFIG_FILE | grep "\"${CODING_WINDOW}" | cut -d " " -f3- | sed 's/"//g')
+
+  echo "Launching gnome-terminal with GEO |$LAUNCH_GEO|"
+
+  # Allow user to set environment variable to an alternate terminal
+  if [[ -z $CODING_TERMINAL ]]
+  then
+    CODING_TERMINAL="gnome-terminal"
+  fi
+
+  # Construct the command that will launch with parameters
+  LAUNCH_CMD="$CODING_TERMINAL $LAUNCH_GEO &"
+
+  # LAUNCH!
+  eval $LAUNCH_CMD
+}
+
+#
+# Main code
+#
+
+# Required
+CONFIG_FILE=~/.coding-config
+
+# Global variable
+RESOLUTION=""
+DISPLAY_LINE=""
+
+# Only used to catch if user wants help, offer this before any real work
+PARAM=${1:-"null"}
+
+if [[ $PARAM == "help" || $PARAM == "usage" || $PARAM == "-h" || $PARAM == "--help" || $PARAM == "-help" ]]
+then
+	usage
+	exit 0
+else
+  CODING_WINDOW="$PARAM"
+fi
+
+# We require a config file, so check for that and bail out if not available
+if [[ ! -r $CONFIG_FILE ]]
+then
+  if [[ ! -f $CONFIG_FILE ]]
+  then
+    echo "Error: Config file $CONFIG_FILE does not exist."
+  else
+    echo "Error: Config file $CONFIG_FILE is not readable."
+  fi
+  exit 1
+fi
+
+# Identify the monitor configuration via the whole desktop resolution
+get_resolution
+
+# Do we have rules to position windows for this display configuration?
+check_for_config
+
+# If we do, launch a gnome-terminal
+launch_terminal
