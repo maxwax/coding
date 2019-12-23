@@ -8,7 +8,7 @@ When properly deployed, a user can tap the Super key, type a keyword such as 'we
 
 Using this combination of Gnome 3 and coding, the user can quickly launch windows and avoid mouse interactions.
 
-![Screen positions Diagram](https://github.com/maxwax/coding/coding.png)
+![Screen positions Diagram](https://github.com/maxwax/coding/blob/master/coding.png)
 
 ## Requirements
 
