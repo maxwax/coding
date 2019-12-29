@@ -9,7 +9,7 @@
 # 2019-12-22 Rewrite to replace messy case statements with config file
 
 function available_display_configs {
-  # 
+  #
   if [[ -r $CONFIG_FILE ]]
   then
     echo "Available monitor configurations:"
@@ -118,7 +118,7 @@ function launch_terminal {
 #
 
 # Required
-CONFIG_FILE=~/.coding-config
+CONFIG_FILE=~/.coding.conf
 
 # Global variable
 RESOLUTION=""

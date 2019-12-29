@@ -43,7 +43,7 @@ The following components must be deployed for all of this to work:
 
 * The coding script, usually at /usr/local/bin/coding
 
-* A configuration file with rules in the user's home directory at $HOME/.coding-config
+* A configuration file with rules in the user's home directory at $HOME/.coding.conf
 
 * Gnome .desktop files that allow the user to press the Super key, type the name of a launcher (such as right, left, east, west) and have the launcher call 'coding' with the named position as a parameter
 
@@ -56,7 +56,7 @@ This installation method should work:
 sudo ./coding-install.sh
 ```
 
-3. Copy 'coding-config' to $HOME/.coding-config and edit rules
+3. Copy 'coding.conf' to $HOME/.coding.conf and edit rules
 4. Try it!  At a terminal, type 'coding right' and see if it launches. Try additional named positiones and adjust the rule file as needed.
 
 ## Configuration Rules
@@ -78,7 +78,7 @@ Screen 0: minimum 320 x 200, current 3120 x 1920, maximum 16384 x 16384
 Each monitor config can have any number of named size and position rules:
 
 ```bash
-# Home office uses a primary 1920x1200 monitor in landscape and a 1920x1200 
+# Home office uses a primary 1920x1200 monitor in landscape and a 1920x1200
 # monitor in portrait mode to the right.
 # 2019-12-22 tested
 display-home-office: "right"          "--geometry 85x37+1139+27"
@@ -96,8 +96,6 @@ display-home-office: "bastionstaging" "--geometry 85x7+0+1200"
 ```
 
 Typing 'center' in a home office will identify the 'display-home-office' monitor-config and use only rules associated with that monitor config.
-
-
 
 ## Issues
 
