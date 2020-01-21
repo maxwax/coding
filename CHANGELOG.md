@@ -1,5 +1,9 @@
 # Coding Versions
 
+## 1.1.0
+
+* Ignore commented out rule lines within config file.
+
 ## 1.0.1 Publish
 
 * Need an excuse to bump this script's version, so adding VERSION and VERSION_DATE fields and reporting them in usage() function.
