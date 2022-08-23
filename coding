@@ -5,11 +5,9 @@
 #
 # Launch a terminal in a pre-defined display position with a pre-defined size
 # and adjust for different display hardware configurations
-#
-# 2019-12-22 Rewrite to replace messy case statements with config file
 
-VERSION="1.1.0"
-VERSION_DATE="2020-01-20"
+VERSION="1.2.0"
+VERSION_DATE="2022-0822"
 
 function available_display_configs {
   #
@@ -27,14 +25,13 @@ function available_display_configs {
 }
 
 function usage {
-
   echo
   echo "coding  $VERSION  $VERSION_DATE"
   echo
   echo "Syntax: coding <windowoption>"
   echo
   echo "+------------------+ +------------------+"
-  echo "|Left | Mid | Right| |Test    |      Far|"
+  echo "|Left | Mid | Right| |Test     |      Far|"
   echo "|                  | |                  |"
   echo "|West| |ctr|  |East| |Sideleft|Sideright|"
   echo "+------------------+ +------------------+"
@@ -61,18 +58,26 @@ function usage {
 function get_resolution {
 
   RESOLUTION=$(xdpyinfo | grep dimensions | awk '{print $2}')
-  echo "Resolution: $RESOLUTION"
+  if [[ ! -z $DEBUG ]]
+  then
+    echo "Resolution: $RESOLUTION"
+  fi
 
   DISPLAY_LINE_COUNT=$(grep '^monitor-config:' $CONFIG_FILE | egrep -v "^#" | grep $RESOLUTION| wc -l)
 
   if [[ $DISPLAY_LINE_COUNT -gt 0 ]]
   then
     DISPLAY_LINE=$(grep '^monitor-config:' $CONFIG_FILE | egrep -v "^#" | grep $RESOLUTION)
-    echo "Monitor config is |$DISPLAY_LINE|"
+    if [[ ! -z $DEBUG ]]
+    then
+      echo "Monitor config is |$DISPLAY_LINE|"
+    fi
 
     POSITION_RULE=$(echo $DISPLAY_LINE | awk '{print $2}')
-    echo "Position rule is |$POSITION_RULE|"
-
+    if [[ ! -z $DEBUG ]]
+    then
+      echo "Position rule is |$POSITION_RULE|"
+    fi
   else
     echo "Error: Can't find a monitor-config line in $CONFIG_FILE for resolution $RESOLUTION"
     available_display_configs
@@ -86,7 +91,10 @@ function check_for_config {
 
   if [[ $POSITION_COUNT -gt 0 ]]
   then
-    echo "Found position rules to apply"
+    if [[ ! -z $DEBUG ]]
+    then
+      echo "Found position rules to apply"
+    fi
   else
     echo "Error: No position rules to apply for |$POSITION_RULE|."
     echo
@@ -96,12 +104,17 @@ function check_for_config {
 }
 
 function launch_terminal {
-
-  grep $POSITION_RULE $CONFIG_FILE | egrep -v "^#" | grep "\"${CODING_WINDOW}"
+  if [[ ! -z $DEBUG ]]
+  then
+    grep $POSITION_RULE $CONFIG_FILE | egrep -v "^#" | grep "\"${CODING_WINDOW}"
+  fi
 
   LAUNCH_GEO=$(egrep "^${POSITION_RULE}" $CONFIG_FILE | egrep -v "^#" | grep "\"${CODING_WINDOW}" | cut -d " " -f3- | sed 's/"//g' | sed 's/  //g')
 
-  echo "Launching gnome-terminal with geometry |$LAUNCH_GEO|"
+  if [[ ! -z $DEBUG ]]
+  then
+    echo "Launching gnome-terminal with geometry |$LAUNCH_GEO|"
+  fi
 
   # Allow user to set environment variable to an alternate terminal
   if [[ -z $CODING_TERMINAL ]]

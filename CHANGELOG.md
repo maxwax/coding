@@ -1,5 +1,9 @@
 # Coding Versions
 
+## 1.2.0
+
+* Only echo statements about operation if $DEBUG variable is set. Otherwise, normal operation writes these echo's outputs to the system log.
+
 ## 1.1.0
 
 * Ignore commented out rule lines within config file.
