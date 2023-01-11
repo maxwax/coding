@@ -91,10 +91,12 @@ function find_monitor_config {
     fi
     # Now try getting horizontal x 9999 resolution config
     scan_for_monitor_config "${HORIZONTAL_RESOLUTION}x9999"
-  else
-    echo "Error: Can't find a monitor-config line in $CONFIG_FILE for resolution $RESOLUTION"
-    available_display_configs
-    exit 1
+    if [[ $POSITION_RULE == "" ]]
+    then
+      echo "Error: Can't find a monitor-config line in $CONFIG_FILE for resolution $RESOLUTION"
+      available_display_configs
+      exit 1
+    fi
   fi
 }
 
