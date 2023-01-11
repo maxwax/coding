@@ -68,6 +68,12 @@ The configuration file defines a 'monitor-config' associated with the X/Y resolu
 `monitor-config: display-home-office: "3120x1920"
 ```
 
+```#!/usr/bin/env bash
+# When no exact H x V resolution is found, the system will look for a
+# special type rule to match on horizontal resolution Only
+monitor-config: display-home-office: "4320x9999"
+```
+
 You can find this resolution with the command line tool 'xrandr':
 
 ```bash

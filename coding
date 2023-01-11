@@ -6,8 +6,8 @@
 # Launch a terminal in a pre-defined display position with a pre-defined size
 # and adjust for different display hardware configurations
 
-VERSION="1.2.0"
-VERSION_DATE="2022-0822"
+VERSION="1.3.0"
+VERSION_DATE="2023-0110"
 
 function available_display_configs {
   #
@@ -30,27 +30,11 @@ function usage {
   echo
   echo "Syntax: coding <windowoption>"
   echo
-  echo "+------------------+ +------------------+"
-  echo "|Left | Mid | Right| |Test     |      Far|"
-  echo "|                  | |                  |"
-  echo "|West| |ctr|  |East| |Sideleft|Sideright|"
-  echo "+------------------+ +------------------+"
+  echo "Launch gnome-terminals in specific positions and sizes based on"
+  echo "configuration rules in \$HOME/.coding.conf"
   echo
-  echo "right     - 85x37 on right  of main monitor"
-  echo "mid       - 85x37 on middle of main monitor"
-  echo "left      - 85x37 on left   of main monitor"
-  echo
-  echo "test      - 85x72 on left   of aux monitor"
-  echo "far       - 85x72 on right  of aux monitor"
-  echo
-  echo "sideleft  - 85x25 on bottom left of aux monitor"
-  echo "sideright - 85x25 on bottom right of aux monitor"
-  echo
-  echo "bastionprod - Very short 80x8 window for SSH bastion connections to prod"
-  echo "bastionstaging - Very short 80x8 window for SSH bastion connections to prod"
-  echo
-  echo "The configuration file contains size and positioning information for"
-  echo "the following display configurations:"
+  echo "Example: 'right' launches a medium size window on the right size"
+  echo "of the central monitor."
   echo
   available_display_configs
 }
@@ -58,16 +42,24 @@ function usage {
 function get_resolution {
 
   RESOLUTION=$(xdpyinfo | grep dimensions | awk '{print $2}')
+
+  # Remove vertical resolution 'x1200'
+  HORIZONTAL_RESOLUTION=${RESOLUTION%x*}
+
   if [[ ! -z $DEBUG ]]
   then
-    echo "Resolution: $RESOLUTION"
+    echo "Resolution: $RESOLUTION, Horizontal Resolution $HORIZONTAL_RESOLUTION"
   fi
+}
 
-  DISPLAY_LINE_COUNT=$(grep '^monitor-config:' $CONFIG_FILE | egrep -v "^#" | grep $RESOLUTION| wc -l)
+function scan_for_monitor_config {
+  # $1 is an exact horizontal x vertical resolution or horizontal x 9999 string
+
+  DISPLAY_LINE_COUNT=$(grep '^monitor-config:' $CONFIG_FILE | egrep -v "^#" | grep ${1}| wc -l)
 
   if [[ $DISPLAY_LINE_COUNT -gt 0 ]]
   then
-    DISPLAY_LINE=$(grep '^monitor-config:' $CONFIG_FILE | egrep -v "^#" | grep $RESOLUTION)
+    DISPLAY_LINE=$(grep '^monitor-config:' $CONFIG_FILE | egrep -v "^#" | grep ${1})
     if [[ ! -z $DEBUG ]]
     then
       echo "Monitor config is |$DISPLAY_LINE|"
@@ -78,6 +70,27 @@ function get_resolution {
     then
       echo "Position rule is |$POSITION_RULE|"
     fi
+  fi
+}
+
+# Using display resolution, try to find a monitor-config line for the resolution
+function find_monitor_config {
+  POSITION_RULE=""
+  # Try getting exact horizontal x vertical resolution config
+  if [[ ! -z $DEBUG ]]
+  then
+    echo "Looking for monitor-config match horizontal x vertical resolution."
+  fi
+
+  scan_for_monitor_config $RESOLUTION
+  if [[ $POSITION_RULE == "" ]]
+  then
+    if [[ ! -z $DEBUG ]]
+    then
+      echo "Looking for monitor-config horizontal match only."
+    fi
+    # Now try getting horizontal x 9999 resolution config
+    scan_for_monitor_config "${HORIZONTAL_RESOLUTION}x9999"
   else
     echo "Error: Can't find a monitor-config line in $CONFIG_FILE for resolution $RESOLUTION"
     available_display_configs
@@ -136,9 +149,11 @@ function launch_terminal {
 # Required
 CONFIG_FILE=~/.coding.conf
 
-# Global variable
+# Global variables
 RESOLUTION=""
+HORIZONTAL_RESOLUTION=""
 DISPLAY_LINE=""
+POSITION_RULE=""
 
 # Only used to catch if user wants help, offer this before any real work
 PARAM=${1:-"null"}
@@ -165,6 +180,9 @@ fi
 
 # Identify the monitor configuration via the whole desktop resolution
 get_resolution
+
+# Attempt to find a monitor-config rule in the config file for this resolution
+find_monitor_config
 
 # Do we have rules to position windows for this display configuration?
 check_for_config

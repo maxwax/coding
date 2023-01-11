@@ -1,5 +1,9 @@
 # Coding Versions
 
+## 1.3.0
+
+* When a monitor-config rule matching the current display's horizontalXvertical resolution cannot be found, recheck for a rule that matchtes the horizontal with a vertical resolution of 'x9999'.  This allows the script to find a monitor-config rule based on a unique two or three monitor horizontal resolution.  Without this the OS may sometimes adjust the reported vertical resolution in response to ?? display position changes ?? and break exact horizontal x vertical monitor-config rules.
+
 ## 1.2.0
 
 * Only echo statements about operation if $DEBUG variable is set. Otherwise, normal operation writes these echo's outputs to the system log.
