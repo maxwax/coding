@@ -1,5 +1,9 @@
 # Coding Versions
 
+## 1.3.2
+
+* Replacing use of 'egrep' with 'grep -E' to remove obsolescence warnings
+
 ## 1.3.1
 
 * Error out if we can't find a monitor-config rule based on H x V or just H resolutions.  Fixes a case where the script just hands when a monitor-config is not found.
