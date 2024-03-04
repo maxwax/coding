@@ -6,8 +6,8 @@
 # Launch a terminal in a pre-defined display position with a pre-defined size
 # and adjust for different display hardware configurations
 
-VERSION="1.3.0"
-VERSION_DATE="2023-0110"
+VERSION="1.3.2"
+VERSION_DATE="2024-0303"
 
 function available_display_configs {
   #
